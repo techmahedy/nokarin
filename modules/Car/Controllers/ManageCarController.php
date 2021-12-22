@@ -180,6 +180,18 @@ class ManageCarController extends FrontendController
             'service_fee',
             'min_day_before_booking',
             'min_day_stays',
+            'vehicle_category_id',
+            'year_model',
+            'chassis_number',
+            'engine_number',
+            'car_body_type_id',
+            'plate_conduction_sticker',
+            'mv_file_no',
+            'garage_area',
+            'copy_of_orcr',
+            'insurance_name',
+            'copy_of_insurance',
+            'deed_of_sale_if_applicable'
         ];
         if($this->hasPermission('car_manage_others')){
             $dataKeys[] = 'create_user';

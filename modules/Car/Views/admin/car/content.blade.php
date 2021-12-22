@@ -125,7 +125,7 @@
                         <select name="vehicle_category_id" id="vehicle_category_id" class="form-control">
                            <option value="" selected disabled>Select Vehicle Category</option>
                            @forelse (\App\Models\VehicleCategory::where('status',1)->get() as $item)
-                           <option value="{{ $item->id }}" >{{ $item->vehicle_category_name }}</option>
+                           <option value="{{ $item->id }}" {{  $item->id == $row->vehicle_category_id ? 'selected' : '' }} >{{ $item->vehicle_category_name }}</option>
                            @empty
                            @endforelse
                         </select>
@@ -134,28 +134,28 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Year Model")}}</label>
-                        <input type="number" min="1900" max="2099" step="1" value="2016" class="form-control"/>
+                        <input type="number" name="year_model" min="1900" max="2099" step="1"  class="form-control" value="{{ $row->year_model ? $row->year_model : '2016'}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Chassis Number")}}</label>
-                        <input type="text"class="form-control" placeholder="Chassis Number"/>
+                        <input type="text"class="form-control" name="chassis_number" placeholder="Chassis Number" value="{{$row->chassis_number}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Engine Number")}}</label>
-                        <input type="text" class="form-control" placeholder="Engine Number"/>
+                        <input type="text" class="form-control" name="engine_number" placeholder="Engine Number" value="{{$row->engine_number}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Body Type")}}</label>
-                        <select name="vehicle_category_id" id="vehicle_category_id" class="form-control">
+                        <select name="car_body_type_id" id="car_body_type_id" class="form-control">
                            <option value="" selected disabled>Select Body Type</option>
                            @forelse (\App\Models\CarBodyType::where('status',1)->get() as $item)
-                           <option value="{{ $item->id }}" >{{ $item->car_body_type_name }}</option>
+                           <option value="{{ $item->id }}" {{  $item->id == $row->car_body_type_id ? 'selected' : '' }}>{{ $item->car_body_type_name }}</option>
                            @empty
                            @endforelse
                         </select>
@@ -164,43 +164,43 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label>{{__("Plate #orConduction Sticker")}}</label>
-                        <input type="text" class="form-control" placeholder="Plate #orConduction Sticker"/>
+                        <input type="text" class="form-control" name="plate_conduction_sticker" placeholder="Plate #orConduction Sticker" value="{{$row->plate_conduction_sticker}}"/>
                     </div>
                 </div>
                 <div class="col-md-2">
                     <div class="form-group">
                         <label>{{__("MV FILE NO")}}</label>
-                        <input type="text"class="form-control" placeholder="MV FILE NO"/>
+                        <input type="text"class="form-control" name="mv_file_no" placeholder="MV FILE NO" value="{{$row->mv_file_no}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Garage Area")}}</label>
-                        <input type="text" class="form-control" placeholder="Garage Area"/>
+                        <input type="text" class="form-control" name="garage_area" placeholder="Garage Area" value="{{$row->garage_area}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Copy of ORCR")}}</label>
-                        <input type="text" class="form-control" placeholder="Copy of ORCR"/>
+                        <input type="text" class="form-control" name="copy_of_orcr" placeholder="Copy of ORCR" value="{{$row->copy_of_orcr}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Insurance Name")}}</label>
-                        <input type="text" class="form-control" placeholder="Insurance Name"/>
+                        <input type="text" class="form-control" name="insurance_name"  placeholder="Insurance Name" value="{{$row->insurance_name}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Copy of Insurance")}}</label>
-                        <input type="text" class="form-control" placeholder="Copy of Insurance"/>
+                        <input type="text" class="form-control" name="copy_of_insurance" placeholder="Copy of Insurance" value="{{$row->copy_of_insurance}}"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Deed Of Sale if applicable")}}</label>
-                        <input type="text" class="form-control" placeholder="Deed Of Sale if applicable"/>
+                        <input type="text" class="form-control" name="deed_of_sale_if_applicable" placeholder="Deed Of Sale if applicable" value="{{$row->deed_of_sale_if_applicable}}"/>
                     </div>
                 </div>
             </div>
