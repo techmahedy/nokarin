@@ -74,7 +74,7 @@ class VehicleDriverController extends FrontendController
     {   
         if( $file = $request->file('id_picture') ) {
             $path = 'driver/id';
-            $this->url = $this->image($file,$path,'','');
+            $this->url = $this->file($file,$path);
         }
 
         if( $file = $request->file('authorization_letter') ) {
@@ -92,7 +92,7 @@ class VehicleDriverController extends FrontendController
         $driver->license_type = $request->license_type;
         $driver->restriction = $request->restriction;
         $driver->cp_contact_number = $request->cp_contact_number;
-        $driver->id_picture = $this->url;
+        $driver->id_picture = $this->url ? '/storage/'.$this->url : '';
         $driver->viber_number = $request->viber_number;
         $driver->fb_or_messenger_name = $request->fb_or_messenger_name;
         $driver->emg_cp_name = $request->emg_cp_name;
@@ -171,7 +171,7 @@ class VehicleDriverController extends FrontendController
     {   
         if( $file = $request->file('id_picture') ) {
             $path = 'driver/id';
-            $this->url = $this->image($file,$path,'','');
+            $this->url = $this->file($file,$path);
         }
 
         if( $file = $request->file('authorization_letter') ) {
@@ -189,7 +189,7 @@ class VehicleDriverController extends FrontendController
         $driver->license_type = $request->license_type;
         $driver->restriction = $request->restriction;
         $driver->cp_contact_number = $request->cp_contact_number;
-        $driver->id_picture = $this->url ? $this->url : $driver->id_picture;
+        $driver->id_picture = $this->url ? '/storage/'.$this->url : $driver->id_picture;
         $driver->viber_number = $request->viber_number;
         $driver->fb_or_messenger_name = $request->fb_or_messenger_name;
         $driver->emg_cp_name = $request->emg_cp_name;

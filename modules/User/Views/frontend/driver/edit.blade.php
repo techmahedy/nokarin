@@ -83,7 +83,7 @@
                         <label class="control-label">ID Picture (1x1 or 2x2)</label>
                         <input type="file" name="id_picture" id="">
                         <div class="form-group-image">
-                            <img src="{{@App::make('url')->to('/').'/'. $fields->id_picture }}" style="height: 100px;width:100px;"></img>
+                            <img src="{{$fields->id_picture }}" style="height: 100px;width:100px;"></img>
                         </div>
                     </div>
                 </div>
