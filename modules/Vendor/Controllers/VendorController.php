@@ -21,6 +21,9 @@ use Modules\Booking\Models\Booking;
 class VendorController extends FrontendController
 {
     protected $bookingClass;
+
+    protected $path;
+
     public function __construct()
     {
         $this->bookingClass = Booking::class;
@@ -89,10 +92,9 @@ class VendorController extends FrontendController
             }
             $user = new \App\User();
             
-            if ($request->file('car_operator_identity_card')) {
-                $car_operator_identity_card = $request->file('car_operator_identity_card');
-                $car_identity_card_name = $car_operator_identity_card->getClientOriginalName();
-                $path = $request->file('car_operator_identity_card')->storeAs('uploads', $car_identity_card_name, 'public');
+            if( $file = $request->file('car_operator_identity_card') ) {
+                $path = 'uploads/car/idcard';
+                $this->path = $this->file($file,$path);
             }
 
             $user = $user->fill([
@@ -108,7 +110,7 @@ class VendorController extends FrontendController
                 'car_operator_address'       => $request->input('car_operator_address'),
                 'car_operator_contact_number'=> $request->input('car_operator_contact_number'),
                 'is_logistics'               => $request->input('is_logistics') == 'yes' ? 1 : 0,
-                'car_operator_identity_card' => $path ? '/storage/'.$path : ''
+                'car_operator_identity_card' => $this->path ? '/storage/'.$this->path : ''
             ]);
             
             $user->status = 'publish';
