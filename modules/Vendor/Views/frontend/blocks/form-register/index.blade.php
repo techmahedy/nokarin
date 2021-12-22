@@ -6,7 +6,10 @@
         <div class="row">
             <div class="col-12 col-lg-5">
                 <h1>{{$title}}</h1>
-                <p class="sub-heading">{{$desc}}</p>
+                <p class="sub-heading">{{$desc}}</p><br>
+                @if(session()->has('success'))
+                <div class="alert alert-success">{{ session()->get('success') }}</div>
+                @endif
                 <form class="" method="post" action="{{route('vendor.register')}}" id="bravo-form-register-vendor" enctype="multipart/form-data">
                     @csrf
 

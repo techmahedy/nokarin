@@ -145,9 +145,7 @@ class VendorController extends FrontendController
                     'redirect' => url(app_get_locale(false, '/')),
                 ]);
             } else {
-                return $this->sendSuccess([
-                    'redirect' => url(app_get_locale(false, '/')),
-                ], __("Register success. Please wait for admin approval"));
+                return redirect()->back()->with('success','Register success. Please wait for admin approval');
             }
         }
     }
