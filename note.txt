@@ -12,3 +12,9 @@ php artisan migrate --path=/database/migrations/2021_12_19_163339_create_car_bod
 **** project helper ****
 admin_sidebar_menu_path --> modules/layouts/admin/parts
 vendor_sidebar_menu     --> modules/user/views/frontend/layouts/sidebar
+
+**** server details ****
+https://server1.gadgetekpos.website:2083/
+
+servxgo
+*#Jim#133002@*##@133002
