@@ -75,19 +75,13 @@ class VendorController extends FrontendController
         }
         $validator = Validator::make($request->all(), $rules, $messages);
         if ($validator->fails()) {
-            return response()->json([
-                'error'    => true,
-                'messages' => $validator->errors()
-            ], 200);
+            return redirect()->back()->with('error','Duplicate email address, please try again!');
         } else {
             if (ReCaptchaEngine::isEnable() and setting_item("user_enable_register_recaptcha")) {
                 $codeCapcha = $request->input('g-recaptcha-response');
                 if (!ReCaptchaEngine::verify($codeCapcha)) {
                     $errors = new MessageBag(['message_error' => __('Please verify the captcha')]);
-                    return response()->json([
-                        'error'    => true,
-                        'messages' => $errors
-                    ], 200);
+                    return redirect()->back()->with('success','Please verify the captcha');
                 }
             }
             $user = new \App\User();
