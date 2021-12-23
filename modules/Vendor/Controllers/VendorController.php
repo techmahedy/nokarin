@@ -2,24 +2,27 @@
 
 namespace Modules\Vendor\Controllers;
 
-use App\Helpers\ReCaptchaEngine;
 use App\User;
+use App\File\File;
+use Matrix\Exception;
 use Illuminate\Http\Request;
+use Modules\FrontendController;
+use App\Helpers\ReCaptchaEngine;
+use Illuminate\Support\MessageBag;
+use Illuminate\Support\Facades\Log;
+use Modules\Booking\Models\Booking;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
+use Modules\Vendor\Models\VendorRequest;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\MessageBag;
-use Matrix\Exception;
-use Modules\FrontendController;
 use Modules\User\Events\NewVendorRegistered;
 use Modules\User\Events\SendMailUserRegistered;
-use Modules\Vendor\Models\VendorRequest;
-use Modules\Booking\Models\Booking;
 
 
 class VendorController extends FrontendController
-{
+{   
+    use File;
+
     protected $bookingClass;
 
     protected $path;
