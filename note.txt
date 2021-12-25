@@ -20,3 +20,5 @@ https://server1.gadgetekpos.website:2083/
 
 servxgo
 *#Jim#133002@*##@133002
+
+auth()->user()->getRoleNameAttribute() == 'Administrator' ? 'Admin' : 'Not Admin';

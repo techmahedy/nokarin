@@ -40,13 +40,7 @@ $menus = [
         'icon'       => 'icon ion-ios-ribbon',
         'permission' => 'dashboard_access',
         'position'   => 60
-    ],
-   'vehicle_driver'        => [
-        'url'      => route("vehicle.driver.get"),
-        'title'    => __("Vehicle Driver"),
-        'icon'     => 'fa fa-car',
-        'position' => 30
-    ],
+    ]
 ];
 
 // Modules

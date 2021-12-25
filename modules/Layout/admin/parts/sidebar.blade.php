@@ -13,33 +13,6 @@ $menus = [
         'icon'       => 'icon ion-ios-apps',
         'permission' => 'menu_view',
     ],
-    'car_settings'=>[
-        "position"=>10,
-        'url'      => '#',
-        'title'    => __("Car Settings"),
-        'icon'     => 'icon ion-ios-hammer',
-        'children' => [
-            'car_body_type'=>[
-                'url'        => 'admin/module/car/body/type',
-                'title'      => __('Car Body Type'),
-                'icon'       => '',
-                'permission' => 'language_manage',
-            ],
-            'car_category'=>[
-                'url'        => 'admin/module/vehicle/categories',
-                'title'      => __("Car Category"),
-                'icon'       => '',
-                'permission' => 'language_translation',
-            ]
-        ]
-    ],
-    'vehicle_driver'=>[
-        "position"=>15,
-        'url'        => 'admin/module/vehicle/driver',
-        'title'      => __("Vehicle Drivers"),
-        'icon'       => 'ion-logo-model-s',
-        'permission' => 'menu_view',
-    ],
     'template'=>[
         "position"=>70,
         'url'        => 'admin/module/template',
