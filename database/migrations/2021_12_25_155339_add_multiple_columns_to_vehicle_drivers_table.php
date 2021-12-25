@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddNewColumnToVehicleDriversTable extends Migration
+class AddMultipleColumnsToVehicleDriversTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,6 +15,7 @@ class AddNewColumnToVehicleDriversTable extends Migration
     {
         Schema::table('vehicle_drivers', function (Blueprint $table) {
             $table->string('emg_cp_number')->after('emg_cp_name');
+            $table->json('restriction')->nullable();
         });
     }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Casts\Json;
 
 class VehicleDriver extends Model
 {
@@ -17,14 +18,15 @@ class VehicleDriver extends Model
         'license_number',
         'license_expiry_date',
         'license_type',
-        'restriction',
         'cp_contact_number',
         'id_picture',
         'viber_number',
         'fb_or_messenger_name',
         'emg_cp_name',
+        'emg_cp_number',
         'relation',
-        'authorization_letter'
+        'authorization_letter',
+        'restriction'
     ];
     
     public function getFullNameAttribute()

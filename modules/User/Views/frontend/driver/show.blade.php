@@ -36,19 +36,14 @@
                     <label class="control-label">License Type *</label> <br>
                     <input type="radio" name="license_type" value="pro" {{ $fields->license_type == 'pro' ? 'checked' : '' }}> Pro
                     <input type="radio" name="license_type" value="non_pro" {{ $fields->license_type == 'non_pro' ? 'checked' : '' }}> Non Pro
-                 </div>
-                 <div class="form-group">
-                    <label class="control-label">Restriction</label>
-                    <select name="restriction" class="custom-select form-control">
-                        <option value="0" selected disabled>Select Restriction</option>
-                        <option value="1" {{ $fields->restriction == '1' ? 'selected' : '' }} disabled>1</option>
-                        <option value="2" {{ $fields->restriction == '2' ? 'selected' : '' }} disabled>2</option>
-                        <option value="3" {{ $fields->restriction == '3' ? 'selected' : '' }} disabled>3</option>
-                        <option value="4" {{ $fields->restriction == '4' ? 'selected' : '' }} disabled>4</option>
-                        <option value="5" {{ $fields->restriction == '5' ? 'selected' : '' }} disabled>5</option>
-                        <option value="6" {{ $fields->restriction == '6' ? 'selected' : '' }} disabled>6</option>
-                    </select>
-                 </div>
+                  </div>
+                  <div class="form-group">
+                     @php $restriction = json_decode($fields->restriction); @endphp
+                     <label for="">Restriction</label> <br>
+                     @for ($i = 1; $i < 7; $i++)
+                        <input type="checkbox" name="restriction[]" value="{{ $i }}" {{ in_array($i,$restriction) ? 'checked' : '' }}> {{ $i }}
+                     @endfor
+                  </div>
                  <div class="form-group">
                     <label class="control-label">CP Contact Number</label>
                     <input type="text" name="cp_contact_number" value="{{ $fields->cp_contact_number }}" class="form-control" readonly>

@@ -40,16 +40,10 @@
                     <input type="radio" name="license_type" value="non_pro"> Non Pro
                  </div>
                  <div class="form-group">
-                    <label class="control-label">Restriction</label>
-                    <select name="restriction" class="custom-select form-control">
-                        <option value="0" selected disabled>Select Restriction</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                    </select>
+                    <label for="">Restriction</label> <br>
+                    @for ($i = 1; $i < 7; $i++)
+                    <input type="checkbox" name="restriction[]" value="{{ $i }}"> {{ $i }}
+                    @endfor
                  </div>
                  <div class="form-group">
                     <label class="control-label">CP Contact Number *</label>
@@ -82,7 +76,7 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group">
-                    <label class="control-label">ID Picture (1x1 or 2x2)</label>
+                    <label class="control-label">ID Picture (1x1 or 2x2) *</label>
                     <div class="form-group-image">
                         <div class="dungdt-upload-box dungdt-upload-box-normal " data-val="">
                            <input type="file" name="id_picture" v-model="value" value="">

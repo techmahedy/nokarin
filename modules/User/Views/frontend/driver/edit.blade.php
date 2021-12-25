@@ -41,16 +41,11 @@
                         <input type="radio" name="license_type" value="non_pro" {{ $fields->license_type == 'non_pro' ? 'checked' : '' }}> Non Pro
                      </div>
                      <div class="form-group">
-                        <label class="control-label">Restriction</label>
-                        <select name="restriction" class="custom-select form-control">
-                            <option value="0" selected disabled>Select Restriction</option>
-                            <option value="1" {{ $fields->restriction == '1' ? 'selected' : '' }} >1</option>
-                            <option value="2" {{ $fields->restriction == '2' ? 'selected' : '' }} >2</option>
-                            <option value="3" {{ $fields->restriction == '3' ? 'selected' : '' }} >3</option>
-                            <option value="4" {{ $fields->restriction == '4' ? 'selected' : '' }} >4</option>
-                            <option value="5" {{ $fields->restriction == '5' ? 'selected' : '' }} >5</option>
-                            <option value="6" {{ $fields->restriction == '6' ? 'selected' : '' }} >6</option>
-                        </select>
+                        @php $restriction = json_decode($fields->restriction); @endphp
+                        <label for="">Restriction</label> <br>
+                        @for ($i = 1; $i < 7; $i++)
+                           <input type="checkbox" name="restriction[]" value="{{ $i }}" {{ in_array($i,$restriction) ? 'checked' : '' }}> {{ $i }}
+                        @endfor
                      </div>
                      <div class="form-group">
                         <label class="control-label">CP Contact Number</label>

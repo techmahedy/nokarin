@@ -22,7 +22,6 @@ class CreateVehicleDriversTable extends Migration
             $table->string('license_number');
             $table->date('license_expiry_date');
             $table->enum('license_type',['pro','non_pro']);
-            $table->enum('restriction',[1,2,3,4,5,6]);
             $table->string('cp_contact_number');
             $table->string('id_picture')->nullable();
             $table->string('viber_number')->nullable();

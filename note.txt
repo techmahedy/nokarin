@@ -9,7 +9,7 @@ php artisan migrate --path=/database/migrations/2021_12_17_170549_create_assign_
 php artisan migrate --path=/database/migrations/2021_12_19_161210_create_vehicle_categories_table.php
 php artisan migrate --path=/database/migrations/2021_12_19_163339_create_car_body_types_table.php
 php artisan migrate --path=/database/migrations/2021_12_22_172008_add_multiple_columns_to_bravo_cars_table.php
-php artisan migrate --path=/database/migrations/2021_12_23_181019_add_new_column_to_vehicle_drivers_table.php
+php artisan migrate --path=/database/migrations/2021_12_25_155339_add_multiple_columns_to_vehicle_drivers_table.php 
 
 **** project helper ****
 admin_sidebar_menu_path --> modules/layouts/admin/parts
