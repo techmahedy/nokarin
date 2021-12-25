@@ -76,7 +76,8 @@
                 <div class="form-group">
                     <label class="control-label">ID Picture (1x1 or 2x2)</label>
                     <div class="form-group-image">
-                        <img src="{{@App::make('url')->to('/').'/'. $fields->id_picture }}" style="height: 100px;width:100px;"></img>
+                     <img src="{{$fields->id_picture }}" style="height: 100px;width:100px;"></img>
+                  </div>
                     </div>
                 </div>
             </div>

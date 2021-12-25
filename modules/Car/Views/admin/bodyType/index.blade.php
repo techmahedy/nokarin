@@ -12,7 +12,9 @@
                     <button class="btn-info btn btn-icon btn_search btn-sm" type="submit">Search</button>
                 </form>
             </div>
+            <a href="{{ route('admin.vehicle.car.bodytype.create') }}" class="btn-info btn btn-icon btn_search btn-sm ">Add Car Body Type</a>
         </div>
+
         @include('admin.message')
 
         <div class="panel">
@@ -35,7 +37,7 @@
                                <td>{{ $driver->car_body_type_name }}</td>
                                <td>{{ $driver->status == 1 ? 'Active' : 'Inactive' }}</td>
                                <td>
-                                   <a href="{{ route('admin.driver.show',$driver->id) }}" class="btn btn-info btn-sm">Details</a> 
+                                   <a href="{{ route('admin.vehicle.car.bodytype.edit',$driver->id) }}" class="btn btn-info btn-sm">Edit</a> 
                                </td>
                             </tr> 
                             @empty

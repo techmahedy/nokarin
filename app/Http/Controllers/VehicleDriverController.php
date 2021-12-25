@@ -96,6 +96,7 @@ class VehicleDriverController extends FrontendController
         $driver->viber_number = $request->viber_number;
         $driver->fb_or_messenger_name = $request->fb_or_messenger_name;
         $driver->emg_cp_name = $request->emg_cp_name;
+        $driver->emg_cp_number = $request->emg_cp_number;
         $driver->relation = $request->relation;
         $driver->authorization_letter = $this->path ? '/storage/'.$this->path : '';
         $driver->save();
@@ -193,6 +194,7 @@ class VehicleDriverController extends FrontendController
         $driver->viber_number = $request->viber_number;
         $driver->fb_or_messenger_name = $request->fb_or_messenger_name;
         $driver->emg_cp_name = $request->emg_cp_name;
+        $driver->emg_cp_number = $request->emg_cp_number;
         $driver->relation = $request->relation;
         $driver->authorization_letter = $this->path ? '/storage/'.$this->path : $driver->authorization_letter;
         $driver->save();

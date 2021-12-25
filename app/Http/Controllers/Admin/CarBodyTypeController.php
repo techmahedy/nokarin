@@ -35,4 +35,67 @@ class CarBodyTypeController extends Controller
       
         return view('Car::admin.bodyType.index', $data);
     }
+
+    public function create()
+    {   
+        $data = [
+            'fields'         => '',
+            'only_show_data' => 1,
+            'breadcrumbs'    => [
+                [
+                    'name'  => __('Create Car Body Type'),
+                    'class' => 'active'
+                ],
+            ],
+        ];
+
+        return view('Car::admin.bodyType.create', $data);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'car_body_type_name' => 'required'
+        ]);
+
+        $this->carBodyType::create([
+            'car_body_type_name' => $request->input('car_body_type_name'),
+            'status'             => $request->input('status')
+        ]);
+
+        return redirect()->route('admin.vehicle.car.bodytype.get')->with('success','Car body type created successfully!');
+
+    }
+
+    public function edit($id)
+    {
+        $data = $this->carBodyType::find($id);
+
+        $data = [
+            'fields'         => $data,
+            'only_show_data' => 1,
+            'breadcrumbs'    => [
+                [
+                    'name'  => __('Edit Car Body Type'),
+                    'class' => 'active'
+                ],
+            ],
+        ];
+
+        return view('Car::admin.bodyType.update', $data);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'car_body_type_name' => 'required'
+        ]);
+
+        $this->carBodyType::where('id',$id)->update([
+            'car_body_type_name' => $request->input('car_body_type_name'),
+            'status'             => $request->input('status')
+        ]);
+
+        return redirect()->route('admin.vehicle.car.bodytype.get')->with('success','Car body type created successfully!');
+    }
 }

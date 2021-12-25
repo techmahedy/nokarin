@@ -12,6 +12,7 @@
                     <button class="btn-info btn btn-icon btn_search btn-sm" type="submit">Search</button>
                 </form>
             </div>
+            <a href="{{ route('admin.vehicle.category.create') }}" class="btn-info btn btn-icon btn_search btn-sm ">Add Vehicle Category</a>
         </div>
         @include('admin.message')
 
@@ -35,7 +36,7 @@
                                <td>{{ $driver->vehicle_category_name }}</td>
                                <td>{{ $driver->status == 1 ? 'Active' : 'Inactive' }}</td>
                                <td>
-                                   <a href="{{ route('admin.driver.show',$driver->id) }}" class="btn btn-info btn-sm">Details</a> 
+                                   <a href="{{ route('admin.vehicle.category.edit',$driver->id) }}" class="btn btn-info btn-sm">Edit</a> 
                                </td>
                             </tr> 
                             @empty

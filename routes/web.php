@@ -61,7 +61,15 @@ Route::name('admin.')
 
     //vehicle category
     Route::get('vehicle/categories','VehicleCategoryController@index')->name('vehicle.category.get');
-    
+    Route::get('vehicle/categories/create','VehicleCategoryController@create')->name('vehicle.category.create');
+    Route::post('vehicle/categories/create','VehicleCategoryController@store');
+    Route::get('vehicle/categories/edit/{id}','VehicleCategoryController@edit')->name('vehicle.category.edit');
+    Route::put('vehicle/categories/edit/{id}','VehicleCategoryController@update');
+
     //vehicle category
     Route::get('car/body/type','CarBodyTypeController@index')->name('vehicle.car.bodytype.get');
+    Route::get('car/body/type/create','CarBodyTypeController@create')->name('vehicle.car.bodytype.create');
+    Route::post('car/body/type/create','CarBodyTypeController@store');
+    Route::get('car/body/type/edit/{id}','CarBodyTypeController@edit')->name('vehicle.car.bodytype.edit');
+    Route::put('car/body/type/edit/{id}','CarBodyTypeController@update');
 });

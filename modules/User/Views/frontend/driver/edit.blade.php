@@ -69,6 +69,10 @@
                         <input type="text" name="emg_cp_name" value="{{ $fields->emg_cp_name }}" class="form-control" >
                      </div>
                      <div class="form-group">
+                        <label class="control-label">Contact Person Number in case of emergency *</label>
+                        <input type="text" name="emg_cp_number"value="{{ $fields->emg_cp_number }}"  class="form-control">
+                     </div>
+                     <div class="form-group">
                         <label class="control-label">Relation</label>
                         <input type="text" name="relation" value="{{ $fields->relation }}" class="form-control" >
                      </div>

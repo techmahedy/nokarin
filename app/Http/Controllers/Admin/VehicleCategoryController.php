@@ -35,4 +35,67 @@ class VehicleCategoryController extends Controller
       
         return view('Car::admin.VehicleCategory.index', $data);
     }
+
+    public function create()
+    {   
+        $data = [
+            'fields'         => '',
+            'only_show_data' => 1,
+            'breadcrumbs'    => [
+                [
+                    'name'  => __('Create New Vehicle Category'),
+                    'class' => 'active'
+                ],
+            ],
+        ];
+
+        return view('Car::admin.VehicleCategory.create', $data);
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'vehicle_category_name' => 'required'
+        ]);
+
+        $this->vehicleCategory::create([
+            'vehicle_category_name' => $request->input('vehicle_category_name'),
+            'status'                => $request->input('status')
+        ]);
+
+        return redirect()->route('admin.vehicle.category.get')->with('success','Vehicle category created successfully!');
+
+    }
+
+    public function edit($id)
+    {
+        $data = $this->vehicleCategory::find($id);
+
+        $data = [
+            'fields'         => $data,
+            'only_show_data' => 1,
+            'breadcrumbs'    => [
+                [
+                    'name'  => __('Edit Vehicle Category'),
+                    'class' => 'active'
+                ],
+            ],
+        ];
+
+        return view('Car::admin.VehicleCategory.update', $data);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'vehicle_category_name' => 'required'
+        ]);
+
+        $this->vehicleCategory::where('id',$id)->update([
+            'vehicle_category_name' => $request->input('vehicle_category_name'),
+            'status'                => $request->input('status')
+        ]);
+
+        return redirect()->route('admin.vehicle.car.bodytype.get')->with('success','Vehicle category updated successfully!');
+    }
 }

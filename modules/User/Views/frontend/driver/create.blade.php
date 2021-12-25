@@ -68,6 +68,10 @@
                     <input type="text" name="emg_cp_name" placeholder="Contact Person in case of emergency" class="form-control">
                  </div>
                  <div class="form-group">
+                  <label class="control-label">Contact Person Number in case of emergency *</label>
+                  <input type="text" name="emg_cp_number" placeholder="Contact Person Number in case of emergency" class="form-control">
+               </div>
+                 <div class="form-group">
                     <label class="control-label">Relation *</label>
                     <input type="text" name="relation" placeholder="Relation" class="form-control">
                  </div>
