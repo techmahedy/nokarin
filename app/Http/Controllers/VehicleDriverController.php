@@ -188,7 +188,7 @@ class VehicleDriverController extends FrontendController
         $driver->license_number = $request->license_number;
         $driver->license_expiry_date = $request->license_expiry_date;
         $driver->license_type = $request->license_type;
-        $driver->restriction = $request->restriction;
+        $driver->restriction = json_encode($request->restriction);
         $driver->cp_contact_number = $request->cp_contact_number;
         $driver->id_picture = $this->url ? '/storage/'.$this->url : $driver->id_picture;
         $driver->viber_number = $request->viber_number;

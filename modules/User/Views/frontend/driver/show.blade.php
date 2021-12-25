@@ -41,7 +41,11 @@
                      @php $restriction = json_decode($fields->restriction); @endphp
                      <label for="">Restriction</label> <br>
                      @for ($i = 1; $i < 7; $i++)
+                        @empty($restriction)
+                        <input type="checkbox" name="restriction[]" value="{{ $i }}"> {{ $i }}
+                        @else 
                         <input type="checkbox" name="restriction[]" value="{{ $i }}" {{ in_array($i,$restriction) ? 'checked' : '' }}> {{ $i }}
+                        @endempty
                      @endfor
                   </div>
                  <div class="form-group">
@@ -69,8 +73,10 @@
                     <input type="text" name="relation" value="{{ $fields->relation }}" class="form-control" readonly>
                  </div>
                  <div class="form-group">
+                  @empty(! $fields->authorization_letter)
                     <label class="control-label">Authorization Letter</label>
                     <a href="{{ $fields->authorization_letter }}">Authorization Letter</a>
+                  @endempty
                  </div>
             </div>
             <div class="col-md-4">

@@ -44,7 +44,11 @@
                         @php $restriction = json_decode($fields->restriction); @endphp
                         <label for="">Restriction</label> <br>
                         @for ($i = 1; $i < 7; $i++)
+                           @empty($restriction)
+                           <input type="checkbox" name="restriction[]" value="{{ $i }}"> {{ $i }}
+                           @else 
                            <input type="checkbox" name="restriction[]" value="{{ $i }}" {{ in_array($i,$restriction) ? 'checked' : '' }}> {{ $i }}
+                           @endempty
                         @endfor
                      </div>
                      <div class="form-group">
