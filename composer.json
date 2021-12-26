@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3.0",
+        "php": "^7.3.0|^8.0",
         "aws/aws-sdk-php": "~3.0",
         "bavix/laravel-wallet": "^6.1",
         "eluceo/ical": "^0.15.1",

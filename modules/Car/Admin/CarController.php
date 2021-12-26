@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Created by PhpStorm.
  * User: Admin
  * Date: 7/30/2019
  * Time: 1:56 PM
  */
+
 namespace Modules\Car\Admin;
 
 use Illuminate\Http\Request;

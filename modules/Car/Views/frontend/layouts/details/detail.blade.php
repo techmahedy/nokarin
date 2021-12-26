@@ -4,6 +4,7 @@
  * @var $row \Modules\Car\Models\Car
  */
 ?>
+
 <div class="g-header">
     <div class="left">
         <h1>{!! clean($translation->title) !!}</h1>
@@ -100,3 +101,4 @@
     </div>
 </div>
 @endif
+

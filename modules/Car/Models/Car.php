@@ -3,6 +3,9 @@
 namespace Modules\Car\Models;
 
 use App\Currency;
+use App\Models\CarBodyType;
+use App\Models\VehicleCategory;
+use Bavix\Wallet\Objects\Cart;
 use Illuminate\Http\Response;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Auth;
@@ -51,8 +54,8 @@ class Car extends Bookable
         'faqs'  => 'array',
         'extra_price'  => 'array',
         'service_fee'  => 'array',
-        'price'=>'float',
-        'sale_price'=>'float',
+        'price' => 'float',
+        'sale_price' => 'float',
     ];
     /**
      * @var Booking
@@ -76,6 +79,10 @@ class Car extends Bookable
     protected $carTranslationClass;
     protected $userWishListClass;
 
+    protected $carVehicleCategory;
+    protected $carBodyType;
+
+
     protected $tmp_price = 0;
     protected $tmp_dates = [];
 
@@ -88,6 +95,9 @@ class Car extends Bookable
         $this->carTermClass = CarTerm::class;
         $this->carTranslationClass = CarTranslation::class;
         $this->userWishListClass = UserWishList::class;
+
+        $this->carVehicleCategory = VehicleCategory::class;
+        $this->carBodyType = CarBodyType::class;
     }
 
     public static function getModelName()
@@ -109,15 +119,15 @@ class Car extends Bookable
     static public function getSeoMetaForPageList()
     {
         $meta['seo_title'] = __("Search for Cars");
-        if (!empty($title = setting_item_with_lang("car_page_list_seo_title",false))) {
+        if (!empty($title = setting_item_with_lang("car_page_list_seo_title", false))) {
             $meta['seo_title'] = $title;
-        }else if(!empty($title = setting_item_with_lang("car_page_search_title"))) {
+        } else if (!empty($title = setting_item_with_lang("car_page_search_title"))) {
             $meta['seo_title'] = $title;
         }
         $meta['seo_image'] = null;
         if (!empty($title = setting_item("car_page_list_seo_image"))) {
             $meta['seo_image'] = $title;
-        }else if(!empty($title = setting_item("car_page_search_banner"))) {
+        } else if (!empty($title = setting_item("car_page_search_banner"))) {
             $meta['seo_image'] = $title;
         }
         $meta['seo_desc'] = setting_item_with_lang("car_page_list_seo_desc");
@@ -127,38 +137,48 @@ class Car extends Bookable
     }
 
 
-    public function terms(){
+    public function vehicle_category()
+    {
+        return $this->belongsTo($this->carVehicleCategory, "vehicle_category_id");
+    }
+    public function body_type()
+    {
+        return $this->belongsTo($this->carBodyType, "car_body_type_id");
+    }
+    public function terms()
+    {
         return $this->hasMany($this->carTermClass, "target_id");
     }
 
     public function getDetailUrl($include_param = true)
     {
         $param = [];
-        if($include_param){
-            if(!empty($date =  request()->input('date'))){
-                $dates = explode(" - ",$date);
-                if(!empty($dates)){
+        if ($include_param) {
+            if (!empty($date =  request()->input('date'))) {
+                $dates = explode(" - ", $date);
+                if (!empty($dates)) {
                     $param['start'] = $dates[0] ?? "";
                     $param['end'] = $dates[1] ?? "";
                 }
             }
-            if(!empty($adults =  request()->input('adults'))){
+            if (!empty($adults =  request()->input('adults'))) {
                 $param['adults'] = $adults;
             }
-            if(!empty($children =  request()->input('children'))){
+            if (!empty($children =  request()->input('children'))) {
                 $param['children'] = $children;
             }
         }
         $urlDetail = app_get_locale(false, false, '/') . config('car.car_route_prefix') . "/" . $this->slug;
-        if(!empty($param)){
-            $urlDetail .= "?".http_build_query($param);
+        if (!empty($param)) {
+            $urlDetail .= "?" . http_build_query($param);
         }
         return url($urlDetail);
     }
 
-    public static function getLinkForPageSearch( $locale = false , $param = [] ){
+    public static function getLinkForPageSearch($locale = false, $param = [])
+    {
 
-        return url(app_get_locale(false , false , '/'). config('car.car_route_prefix')."?".http_build_query($param));
+        return url(app_get_locale(false, false, '/') . config('car.car_route_prefix') . "?" . http_build_query($param));
     }
 
     public function getGallery($featuredIncluded = false)
@@ -186,12 +206,13 @@ class Car extends Bookable
 
     public function getEditUrl()
     {
-        return url(route('car.admin.edit',['id'=>$this->id]));
+        return url(route('car.admin.edit', ['id' => $this->id]));
     }
 
     public function getDiscountPercentAttribute()
     {
-        if (    !empty($this->price) and $this->price > 0
+        if (
+            !empty($this->price) and $this->price > 0
             and !empty($this->sale_price) and $this->sale_price > 0
             and $this->price > $this->sale_price
         ) {
@@ -202,8 +223,8 @@ class Car extends Bookable
 
     public function fill(array $attributes)
     {
-        if(!empty($attributes)){
-            foreach ( $this->fillable as $item ){
+        if (!empty($attributes)) {
+            foreach ($this->fillable as $item) {
                 $attributes[$item] = $attributes[$item] ?? null;
             }
         }
@@ -220,18 +241,18 @@ class Car extends Bookable
     public function addToCart(Request $request)
     {
         $res = $this->addToCartValidate($request);
-        if($res !== true) return $res;
+        if ($res !== true) return $res;
         // Add Booking
         $total_guests = 0;
         $start_date = new \DateTime($request->input('start_date'));
         $end_date = new \DateTime($request->input('end_date'));
         $extra_price_input = $request->input('extra_price');
         $extra_price = [];
-        $number = $request->input('number',1);
+        $number = $request->input('number', 1);
 
         $total = $this->tmp_price * $number;
 
-        $duration_in_day = max(1,ceil(($end_date->getTimestamp() - $start_date->getTimestamp()) / DAY_IN_SECONDS ) + 1 );
+        $duration_in_day = max(1, ceil(($end_date->getTimestamp() - $start_date->getTimestamp()) / DAY_IN_SECONDS) + 1);
         if ($this->enable_extra_price and !empty($this->extra_price)) {
             if (!empty($this->extra_price)) {
                 foreach ($this->extra_price as $k => $type) {
@@ -258,14 +279,14 @@ class Car extends Bookable
         $total_buyer_fee = 0;
         if (!empty($list_buyer_fees = setting_item('car_booking_buyer_fees'))) {
             $list_fees = json_decode($list_buyer_fees, true);
-            $total_buyer_fee = $this->calculateServiceFees($list_fees , $total_before_fees , $total_guests);
+            $total_buyer_fee = $this->calculateServiceFees($list_fees, $total_before_fees, $total_guests);
             $total += $total_buyer_fee;
         }
 
         //Service Fees for Vendor
         $total_service_fee = 0;
-        if(!empty($this->enable_service_fee) and !empty($list_service_fee = $this->service_fee)){
-            $total_service_fee = $this->calculateServiceFees($list_service_fee , $total_before_fees , $total_guests);
+        if (!empty($this->enable_service_fee) and !empty($list_service_fee = $this->service_fee)) {
+            $total_service_fee = $this->calculateServiceFees($list_service_fee, $total_before_fees, $total_guests);
             $total += $total_service_fee;
         }
 
@@ -292,15 +313,14 @@ class Car extends Bookable
         $booking->calculateCommission();
         $booking->number = $number;
 
-        if($this->isDepositEnable())
-        {
+        if ($this->isDepositEnable()) {
             $booking_deposit_fomular = $this->getDepositFomular();
             $tmp_price_total = $booking->total;
-            if($booking_deposit_fomular == "deposit_and_fee"){
+            if ($booking_deposit_fomular == "deposit_and_fee") {
                 $tmp_price_total = $booking->total_before_fees;
             }
 
-            switch ($this->getDepositType()){
+            switch ($this->getDepositType()) {
                 case "percent":
                     $booking->deposit = $tmp_price_total * $this->getDepositAmount() / 100;
                     break;
@@ -308,7 +328,7 @@ class Car extends Bookable
                     $booking->deposit = $this->getDepositAmount();
                     break;
             }
-            if($booking_deposit_fomular == "deposit_and_fee"){
+            if ($booking_deposit_fomular == "deposit_and_fee") {
                 $booking->deposit = $booking->deposit + $total_buyer_fee + $total_service_fee;
             }
         }
@@ -322,12 +342,11 @@ class Car extends Bookable
             $booking->addMeta('sale_price', $this->sale_price);
             $booking->addMeta('extra_price', $extra_price);
             $booking->addMeta('tmp_dates', $this->tmp_dates);
-            if($this->isDepositEnable())
-            {
-                $booking->addMeta('deposit_info',[
-                    'type'=>$this->getDepositType(),
-                    'amount'=>$this->getDepositAmount(),
-                    'fomular'=>$this->getDepositFomular(),
+            if ($this->isDepositEnable()) {
+                $booking->addMeta('deposit_info', [
+                    'type' => $this->getDepositType(),
+                    'amount' => $this->getDepositAmount(),
+                    'fomular' => $this->getDepositFomular(),
                 ]);
             }
 
@@ -354,110 +373,107 @@ class Car extends Bookable
             if ($validator->fails()) {
                 return $this->sendError('', ['errors' => $validator->errors()]);
             }
-
         }
         $total_number = $request->input('number');
 
         $start_date = $request->input('start_date');
         $end_date = $request->input('end_date');
 
-        if(strtotime($start_date) < strtotime(date('Y-m-d 00:00:00')) or strtotime($start_date) > strtotime($end_date))
-        {
+        if (strtotime($start_date) < strtotime(date('Y-m-d 00:00:00')) or strtotime($start_date) > strtotime($end_date)) {
             return $this->sendError(__("Your selected dates are not valid"));
         }
 
         // Validate Date and Booking
-        if(!$this->isAvailableInRanges($start_date,$end_date,$total_number)){
+        if (!$this->isAvailableInRanges($start_date, $end_date, $total_number)) {
             return $this->sendError(__("This car is not available at selected dates"));
         }
 
-        $numberDays = ( abs(strtotime($end_date) - strtotime($start_date)) / 86400 ) + 1;
-        if(!empty($this->min_day_stays) and  $numberDays < $this->min_day_stays){
-            return $this->sendError(__("You must to book a minimum of :number days",['number'=>$this->min_day_stays]));
+        $numberDays = (abs(strtotime($end_date) - strtotime($start_date)) / 86400) + 1;
+        if (!empty($this->min_day_stays) and  $numberDays < $this->min_day_stays) {
+            return $this->sendError(__("You must to book a minimum of :number days", ['number' => $this->min_day_stays]));
         }
 
-        if(!empty($this->min_day_before_booking)){
-            $minday_before = strtotime("today +".$this->min_day_before_booking." days");
-            if(  strtotime($start_date) < $minday_before){
-                return $this->sendError(__("You must book the service for :number days in advance",["number"=>$this->min_day_before_booking]));
+        if (!empty($this->min_day_before_booking)) {
+            $minday_before = strtotime("today +" . $this->min_day_before_booking . " days");
+            if (strtotime($start_date) < $minday_before) {
+                return $this->sendError(__("You must book the service for :number days in advance", ["number" => $this->min_day_before_booking]));
             }
         }
 
         return true;
     }
 
-    public function isAvailableInRanges($start_date,$end_date,$number = 1){
+    public function isAvailableInRanges($start_date, $end_date, $number = 1)
+    {
 
         $allDates = [];
-//        for($i = strtotime($start_date); $i <= strtotime($end_date); $i += DAY_IN_SECONDS){
-//
-//            $allDates[date('Y-m-d',$i)] = [
-//                'number'=>$this->number,
-//                'price'=>($this->sale_price && $this->sale_price < $this->price) ? $this->sale_price : $this->price,
-//                'status'=>$this->default_state
-//            ];
-//        }
+        //        for($i = strtotime($start_date); $i <= strtotime($end_date); $i += DAY_IN_SECONDS){
+        //
+        //            $allDates[date('Y-m-d',$i)] = [
+        //                'number'=>$this->number,
+        //                'price'=>($this->sale_price && $this->sale_price < $this->price) ? $this->sale_price : $this->price,
+        //                'status'=>$this->default_state
+        //            ];
+        //        }
 
 
-        $period = periodDate($start_date,$end_date);
+        $period = periodDate($start_date, $end_date);
         foreach ($period as $dt) {
             $allDates[$dt->format('Y-m-d')] = [
-                'number'=>$this->number,
-                'price'=>($this->sale_price && $this->sale_price < $this->price) ? $this->sale_price : $this->price,
-                'status'=>$this->default_state
+                'number' => $this->number,
+                'price' => ($this->sale_price && $this->sale_price < $this->price) ? $this->sale_price : $this->price,
+                'status' => $this->default_state
             ];
         }
 
-        $datesData = $this->getDatesInRange($start_date,$end_date);
+        $datesData = $this->getDatesInRange($start_date, $end_date);
 
-        if(!empty($datesData)){
-            foreach ($datesData as $date)
-            {
-                if(empty($allDates[date('Y-m-d',strtotime($date->start_date))])) continue;
-                if(!$date->active or !$date->number or !$date->price) return false;
+        if (!empty($datesData)) {
+            foreach ($datesData as $date) {
+                if (empty($allDates[date('Y-m-d', strtotime($date->start_date))])) continue;
+                if (!$date->active or !$date->number or !$date->price) return false;
 
-                $allDates[date('Y-m-d',strtotime($date->start_date))] = [
-                    'number'=>$date->number,
-                    'price'=>$date->price,
-                    'status'=>true
+                $allDates[date('Y-m-d', strtotime($date->start_date))] = [
+                    'number' => $date->number,
+                    'price' => $date->price,
+                    'status' => true
                 ];
             }
         }
 
-        $bookingData = $this->getBookingsInRange($start_date,$end_date);
-        if(!empty($bookingData)){
-            foreach ($bookingData as $booking){
-                $period = periodDate($booking->start_date,$booking->end_date);
+        $bookingData = $this->getBookingsInRange($start_date, $end_date);
+        if (!empty($bookingData)) {
+            foreach ($bookingData as $booking) {
+                $period = periodDate($booking->start_date, $booking->end_date);
                 foreach ($period as $dt) {
-                   $date = $dt->format('Y-m-d');
-                    if(!array_key_exists($date,$allDates)) continue;
+                    $date = $dt->format('Y-m-d');
+                    if (!array_key_exists($date, $allDates)) continue;
                     $allDates[$date]['number'] -= $booking->number;
-                    if($allDates[$date]['number'] <= 0){
+                    if ($allDates[$date]['number'] <= 0) {
                         return false;
                     }
                 }
             }
         }
 
-        if(empty($allDates)) return false;
-        foreach ($allDates as $date=>$data)
-        {
-            if($data['number'] < $number){
+        if (empty($allDates)) return false;
+        foreach ($allDates as $date => $data) {
+            if ($data['number'] < $number) {
                 return false;
             }
         }
 
-        $this->tmp_price = array_sum(array_column($allDates,'price'));
+        $this->tmp_price = array_sum(array_column($allDates, 'price'));
         $this->tmp_dates = $allDates;
 
         return true;
     }
-    public function getDatesInRange($start_date,$end_date)
+    public function getDatesInRange($start_date, $end_date)
     {
         $query = $this->carDateClass::query();
-        $query->where('target_id',$this->id);
-        $query->where('start_date','>=',date('Y-m-d H:i:s',strtotime($start_date)));
-        $query->where('end_date','<=',date('Y-m-d H:i:s',strtotime($end_date)));
+        $query->where('target_id', $this->id);
+        $query->where('start_date', '>=', date('Y-m-d H:i:s', strtotime($start_date)));
+        $query->where('end_date', '<=', date('Y-m-d H:i:s', strtotime($end_date)));
 
         return $query->take(100)->get();
     }
@@ -478,12 +494,12 @@ class Car extends Bookable
             'start_date'      => request()->input('start') ?? "",
             'start_date_html' => $date_html ?? __('Please select'),
             'end_date'        => request()->input('end') ?? "",
-            'deposit'=>$this->isDepositEnable(),
-            'deposit_type'=>$this->getDepositType(),
-            'deposit_amount'=>$this->getDepositAmount(),
-            'deposit_fomular'=>$this->getDepositFomular(),
-            'is_form_enquiry_and_book'=> $this->isFormEnquiryAndBook(),
-            'enquiry_type'=> $this->getBookingEnquiryType(),
+            'deposit' => $this->isDepositEnable(),
+            'deposit_type' => $this->getDepositType(),
+            'deposit_amount' => $this->getDepositAmount(),
+            'deposit_fomular' => $this->getDepositFomular(),
+            'is_form_enquiry_and_book' => $this->isFormEnquiryAndBook(),
+            'enquiry_type' => $this->getBookingEnquiryType(),
         ];
         $lang = app()->getLocale();
         if ($this->enable_extra_price) {
@@ -515,10 +531,10 @@ class Car extends Bookable
         }
 
         $list_fees = setting_item_array('car_booking_buyer_fees');
-        if(!empty($list_fees)){
-            foreach ($list_fees as $item){
-                $item['type_name'] = $item['name_'.app()->getLocale()] ?? $item['name'] ?? '';
-                $item['type_desc'] = $item['desc_'.app()->getLocale()] ?? $item['desc'] ?? '';
+        if (!empty($list_fees)) {
+            foreach ($list_fees as $item) {
+                $item['type_name'] = $item['name_' . app()->getLocale()] ?? $item['name'] ?? '';
+                $item['type_desc'] = $item['desc_' . app()->getLocale()] ?? $item['desc'] ?? '';
                 $item['price_type'] = '';
                 if (!empty($item['per_person']) and $item['per_person'] == 'on') {
                     $item['price_type'] .= '/' . __('guest');
@@ -526,7 +542,7 @@ class Car extends Bookable
                 $booking_data['buyer_fees'][] = $item;
             }
         }
-        if(!empty($this->enable_service_fee) and !empty($service_fee = $this->service_fee)){
+        if (!empty($this->enable_service_fee) and !empty($service_fee = $this->service_fee)) {
             foreach ($service_fee as $item) {
                 $item['type_name'] = $item['name_' . app()->getLocale()] ?? $item['name'] ?? '';
                 $item['type_desc'] = $item['desc_' . app()->getLocale()] ?? $item['desc'] ?? '';
@@ -599,10 +615,10 @@ class Car extends Bookable
                 ->where("object_id", $this->id)
                 ->where("object_model", $this->type)
                 ->where("customer_id", Auth::id())
-                ->orderBy("id","desc")
+                ->orderBy("id", "desc")
                 ->first();
             $booking_status = $booking->status ?? false;
-            if(!in_array($booking_status , $status)){
+            if (!in_array($booking_status, $status)) {
                 return false;
             }
         }
@@ -665,7 +681,7 @@ class Car extends Bookable
     public function getScoreReview()
     {
         $car_id = $this->id;
-        $list_score = Cache::rememberForever('review_'.$this->type.'_' . $car_id, function () use ($car_id) {
+        $list_score = Cache::rememberForever('review_' . $this->type . '_' . $car_id, function () use ($car_id) {
             $dataReview = $this->reviewClass::selectRaw(" AVG(rate_number) as score_total , COUNT(id) as total_review ")->where('object_id', $car_id)->where('object_model', "car")->where("status", "approved")->first();
             $score_total = !empty($dataReview->score_total) ? number_format($dataReview->score_total, 1) : 0;
             return [
@@ -673,28 +689,29 @@ class Car extends Bookable
                 'total_review' => !empty($dataReview->total_review) ? $dataReview->total_review : 0,
             ];
         });
-        $list_score['review_text'] =  $list_score['score_total'] ? Review::getDisplayTextScoreByLever( round( $list_score['score_total'] )) : __("Not rated");
+        $list_score['review_text'] =  $list_score['score_total'] ? Review::getDisplayTextScoreByLever(round($list_score['score_total'])) : __("Not rated");
         return $list_score;
     }
 
     public function getNumberReviewsInService($status = false)
     {
-        return $this->reviewClass::countReviewByServiceID($this->id, false, $status,$this->type) ?? 0;
+        return $this->reviewClass::countReviewByServiceID($this->id, false, $status, $this->type) ?? 0;
     }
 
-    public function getReviewList(){
-        return $this->reviewClass::select(['id','title','content','rate_number','author_ip','status','created_at','vendor_id','create_user'])->where('object_id', $this->id)->where('object_model', 'car')->where("status", "approved")->orderBy("id", "desc")->with('author')->paginate(setting_item('car_review_number_per_page', 5));
+    public function getReviewList()
+    {
+        return $this->reviewClass::select(['id', 'title', 'content', 'rate_number', 'author_ip', 'status', 'created_at', 'vendor_id', 'create_user'])->where('object_id', $this->id)->where('object_model', 'car')->where("status", "approved")->orderBy("id", "desc")->with('author')->paginate(setting_item('car_review_number_per_page', 5));
     }
 
     public function getNumberServiceInLocation($location)
     {
         $number = 0;
-        if(!empty($location)) {
+        if (!empty($location)) {
             $number = parent::join('bravo_locations', function ($join) use ($location) {
-                $join->on('bravo_locations.id', '=', $this->table.'.location_id')->where('bravo_locations._lft', '>=', $location->_lft)->where('bravo_locations._rgt', '<=', $location->_rgt);
-            })->where($this->table.".status", "publish")->with(['translations'])->count($this->table.".id");
+                $join->on('bravo_locations.id', '=', $this->table . '.location_id')->where('bravo_locations._lft', '>=', $location->_lft)->where('bravo_locations._rgt', '<=', $location->_rgt);
+            })->where($this->table . ".status", "publish")->with(['translations'])->count($this->table . ".id");
         }
-        if(empty($number)) return false;
+        if (empty($number)) return false;
         if ($number > 1) {
             return __(":number Cars", ['number' => $number]);
         }
@@ -706,24 +723,25 @@ class Car extends Bookable
      * @param $to
      * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
      */
-    public function getBookingsInRange($from,$to){
+    public function getBookingsInRange($from, $to)
+    {
 
         $query = $this->bookingClass::query();
-        $query->whereNotIn('status',$this->bookingClass::$notAcceptedStatus);
-        $query->where('start_date','<=',$to)->where('end_date','>=',$from)->take(100);
+        $query->whereNotIn('status', $this->bookingClass::$notAcceptedStatus);
+        $query->where('start_date', '<=', $to)->where('end_date', '>=', $from)->take(100);
 
-        $query->where('object_id',$this->id);
-        $query->where('object_model',$this->type);
+        $query->where('object_id', $this->id);
+        $query->where('object_model', $this->type);
 
-        return $query->orderBy('id','asc')->get();
-
+        return $query->orderBy('id', 'asc')->get();
     }
 
-    public function saveCloneByID($clone_id){
+    public function saveCloneByID($clone_id)
+    {
         $old = parent::find($clone_id);
-        if(empty($old)) return false;
+        if (empty($old)) return false;
         $selected_terms = $old->terms->pluck('term_id');
-        $old->title = $old->title." - Copy";
+        $old->title = $old->title . " - Copy";
         $new = $old->replicate();
         $new->save();
         //Terms
@@ -734,14 +752,14 @@ class Car extends Bookable
             ]);
         }
         //Language
-        $langs = $this->carTranslationClass::where("origin_id",$old->id)->get();
-        if(!empty($langs)){
-            foreach ($langs as $lang){
+        $langs = $this->carTranslationClass::where("origin_id", $old->id)->get();
+        if (!empty($langs)) {
+            foreach ($langs as $lang) {
                 $langNew = $lang->replicate();
                 $langNew->origin_id = $new->id;
                 $langNew->save();
-                $langSeo = SEO::where('object_id', $lang->id)->where('object_model', $lang->getSeoType()."_".$lang->locale)->first();
-                if(!empty($langSeo)){
+                $langSeo = SEO::where('object_id', $lang->id)->where('object_model', $lang->getSeoType() . "_" . $lang->locale)->first();
+                if (!empty($langSeo)) {
                     $langSeoNew = $langSeo->replicate();
                     $langSeoNew->object_id = $langNew->id;
                     $langSeoNew->save();
@@ -750,120 +768,130 @@ class Car extends Bookable
         }
         //SEO
         $metaSeo = SEO::where('object_id', $old->id)->where('object_model', $this->seo_type)->first();
-        if(!empty($metaSeo)){
+        if (!empty($metaSeo)) {
             $metaSeoNew = $metaSeo->replicate();
             $metaSeoNew->object_id = $new->id;
             $metaSeoNew->save();
         }
     }
 
-    public function hasWishList(){
-        return $this->hasOne($this->userWishListClass, 'object_id','id')->where('object_model' , $this->type)->where('user_id' , Auth::id() ?? 0);
+    public function hasWishList()
+    {
+        return $this->hasOne($this->userWishListClass, 'object_id', 'id')->where('object_model', $this->type)->where('user_id', Auth::id() ?? 0);
     }
 
     public function isWishList()
     {
-        if(Auth::id()){
-            if(!empty($this->hasWishList) and !empty($this->hasWishList->id)){
+        if (Auth::id()) {
+            if (!empty($this->hasWishList) and !empty($this->hasWishList->id)) {
                 return 'active';
             }
         }
         return '';
     }
-    public static function getServiceIconFeatured(){
+    public static function getServiceIconFeatured()
+    {
         return "icofont-car";
     }
 
-    public static function isEnable(){
+    public static function isEnable()
+    {
         return setting_item('car_disable') == false;
     }
 
 
-    public function getBookingInRanges($object_id,$object_model,$from,$to,$object_child_id = false){
+    public function getBookingInRanges($object_id, $object_model, $from, $to, $object_child_id = false)
+    {
 
         $query = $this->bookingClass::selectRaw(" * , SUM( number ) as total_numbers ")->where([
-            'object_id'=>$object_id,
-            'object_model'=>$object_model,
-        ])->whereNotIn('status',$this->bookingClass::$notAcceptedStatus)
-            ->where('end_date','>=',$from)
-            ->where('start_date','<=',$to)
+            'object_id' => $object_id,
+            'object_model' => $object_model,
+        ])->whereNotIn('status', $this->bookingClass::$notAcceptedStatus)
+            ->where('end_date', '>=', $from)
+            ->where('start_date', '<=', $to)
             ->groupBy('start_date')
             ->take(200);
 
-        if($object_child_id){
-            $query->where('object_child_id',$object_child_id);
+        if ($object_child_id) {
+            $query->where('object_child_id', $object_child_id);
         }
 
         return $query->get();
     }
 
-    public function isDepositEnable(){
+    public function isDepositEnable()
+    {
         return (setting_item('car_deposit_enable') and setting_item('car_deposit_amount'));
     }
-    public function getDepositAmount(){
+    public function getDepositAmount()
+    {
         return setting_item('car_deposit_amount');
     }
-    public function getDepositType(){
+    public function getDepositType()
+    {
         return setting_item('car_deposit_type');
     }
-    public function getDepositFomular(){
-        return setting_item('car_deposit_fomular','default');
+    public function getDepositFomular()
+    {
+        return setting_item('car_deposit_fomular', 'default');
     }
-	public function detailBookingEachDate($booking){
-		$startDate = $booking->start_date;
-		$endDate = $booking->end_date;
-		$rowDates= json_decode($booking->getMeta('tmp_dates'));
+    public function detailBookingEachDate($booking)
+    {
+        $startDate = $booking->start_date;
+        $endDate = $booking->end_date;
+        $rowDates = json_decode($booking->getMeta('tmp_dates'));
 
-		$allDates=[];
-		$service = $booking->service;
-        $period = periodDate($startDate,$endDate);
+        $allDates = [];
+        $service = $booking->service;
+        $period = periodDate($startDate, $endDate);
         foreach ($period as $dt) {
 
-			$price = (!empty($service->sale_price) and $service->sale_price > 0 and $service->sale_price < $service->price) ? $service->sale_price : $service->price;
-			$date['price'] =$price;
-			$date['price_html'] = format_money($price);
-			$date['from'] = $dt->getTimestamp();
-			$date['from_html'] = $dt->format('d/m/Y');
-			$date['to'] = $dt->getTimestamp();
-			$date['to_html'] = $dt->format('d/m/Y');
-			$allDates[$dt->format(('Y-m-d'))] = $date;
-		}
+            $price = (!empty($service->sale_price) and $service->sale_price > 0 and $service->sale_price < $service->price) ? $service->sale_price : $service->price;
+            $date['price'] = $price;
+            $date['price_html'] = format_money($price);
+            $date['from'] = $dt->getTimestamp();
+            $date['from_html'] = $dt->format('d/m/Y');
+            $date['to'] = $dt->getTimestamp();
+            $date['to_html'] = $dt->format('d/m/Y');
+            $allDates[$dt->format(('Y-m-d'))] = $date;
+        }
 
-		if(!empty($rowDates))
-		{
-			foreach ($rowDates as $item => $row)
-			{
-				$startDate = strtotime($item);
-				$price = $row->price;
-				$date['price'] = $price;
-				$date['price_html'] = format_money($price);
-				$date['from'] = $startDate;
-				$date['from_html'] = date('d/m/Y',$startDate);
-				$date['to'] = $startDate;
-				$date['to_html'] = date('d/m/Y',($startDate));
-				$allDates[date('Y-m-d',$startDate)] = $date;
-			}
-		}
-		return $allDates;
-	}
+        if (!empty($rowDates)) {
+            foreach ($rowDates as $item => $row) {
+                $startDate = strtotime($item);
+                $price = $row->price;
+                $date['price'] = $price;
+                $date['price_html'] = format_money($price);
+                $date['from'] = $startDate;
+                $date['from_html'] = date('d/m/Y', $startDate);
+                $date['to'] = $startDate;
+                $date['to_html'] = date('d/m/Y', ($startDate));
+                $allDates[date('Y-m-d', $startDate)] = $date;
+            }
+        }
+        return $allDates;
+    }
 
-    public static function isEnableEnquiry(){
-        if(!empty(setting_item('booking_enquiry_for_car'))){
+    public static function isEnableEnquiry()
+    {
+        if (!empty(setting_item('booking_enquiry_for_car'))) {
             return true;
         }
         return false;
     }
-    public static function isFormEnquiryAndBook(){
+    public static function isFormEnquiryAndBook()
+    {
         $check = setting_item('booking_enquiry_for_car');
-        if(!empty($check) and setting_item('booking_enquiry_type') == "booking_and_enquiry" ){
+        if (!empty($check) and setting_item('booking_enquiry_type') == "booking_and_enquiry") {
             return true;
         }
         return false;
     }
-    public static function getBookingEnquiryType(){
+    public static function getBookingEnquiryType()
+    {
         $check = setting_item('booking_enquiry_for_car');
-        if(!empty($check)){
-            if( setting_item('booking_enquiry_type') == "only_enquiry" ) {
+        if (!empty($check)) {
+            if (setting_item('booking_enquiry_type') == "only_enquiry") {
                 return "enquiry";
             }
         }
@@ -876,8 +904,8 @@ class Car extends Bookable
         $model_car = parent::query()->select("bravo_cars.*");
         $model_car->where("bravo_cars.status", "publish");
         if (!empty($location_id = $request->query('location_id'))) {
-            $location = Location::query()->where('id', $location_id)->where("status","publish")->first();
-            if(!empty($location)){
+            $location = Location::query()->where('id', $location_id)->where("status", "publish")->first();
+            if (!empty($location)) {
                 $model_car->join('bravo_locations', function ($join) use ($location) {
                     $join->on('bravo_locations.id', '=', 'bravo_cars.location_id')
                         ->where('bravo_locations._lft', '>=', $location->_lft)
@@ -888,14 +916,13 @@ class Car extends Bookable
         if (!empty($price_range = $request->query('price_range'))) {
             $pri_from = explode(";", $price_range)[0];
             $pri_to = explode(";", $price_range)[1];
-            $raw_sql_min_max = "( (IFNULL(bravo_cars.sale_price,0) > 0 and bravo_cars.sale_price >= ? ) OR (IFNULL(bravo_cars.sale_price,0) <= 0 and bravo_cars.price >= ? ) ) 
+            $raw_sql_min_max = "( (IFNULL(bravo_cars.sale_price,0) > 0 and bravo_cars.sale_price >= ? ) OR (IFNULL(bravo_cars.sale_price,0) <= 0 and bravo_cars.price >= ? ) )
                             AND ( (IFNULL(bravo_cars.sale_price,0) > 0 and bravo_cars.sale_price <= ? ) OR (IFNULL(bravo_cars.sale_price,0) <= 0 and bravo_cars.price <= ? ) )";
-            $model_car->WhereRaw($raw_sql_min_max,[$pri_from,$pri_from,$pri_to,$pri_to]);
+            $model_car->WhereRaw($raw_sql_min_max, [$pri_from, $pri_from, $pri_to, $pri_to]);
         }
 
         $terms = $request->query('terms');
-        if($term_id = $request->query('term_id'))
-        {
+        if ($term_id = $request->query('term_id')) {
             $terms[] = $term_id;
         }
         if (is_array($terms) && !empty($terms)) {
@@ -905,31 +932,30 @@ class Car extends Bookable
         if (is_array($review_scores) && !empty($review_scores)) {
             $where_review_score = [];
             $params = [];
-            foreach ($review_scores as $number){
+            foreach ($review_scores as $number) {
                 $where_review_score[] = " ( bravo_cars.review_score >= ? AND bravo_cars.review_score <= ? ) ";
                 $params[] = $number;
-                $params[] = $number.'.9';
+                $params[] = $number . '.9';
             }
             $sql_where_review_score = " ( " . implode("OR", $where_review_score) . " )  ";
-            $model_car->WhereRaw($sql_where_review_score,$params);
+            $model_car->WhereRaw($sql_where_review_score, $params);
         }
-        if(!empty( $service_name = $request->query("service_name") )){
-            if( setting_item('site_enable_multi_lang') && setting_item('site_locale') != app()->getLocale() ){
+        if (!empty($service_name = $request->query("service_name"))) {
+            if (setting_item('site_enable_multi_lang') && setting_item('site_locale') != app()->getLocale()) {
                 $model_car->leftJoin('bravo_car_translations', function ($join) {
                     $join->on('bravo_cars.id', '=', 'bravo_car_translations.origin_id');
                 });
                 $model_car->where('bravo_car_translations.title', 'LIKE', '%' . $service_name . '%');
-
-            }else{
+            } else {
                 $model_car->where('bravo_cars.title', 'LIKE', '%' . $service_name . '%');
             }
         }
-        if(!empty($lat = $request->query('map_lat')) and !empty($lgn = $request->query('map_lgn'))){
-//            ORDER BY (POW((lon-$lon),2) + POW((lat-$lat),2))";
-            $model_car->orderByRaw("POW((bravo_cars.map_lng-".$lgn."),2) + POW((bravo_cars.map_lat-".$lat."),2)");
+        if (!empty($lat = $request->query('map_lat')) and !empty($lgn = $request->query('map_lgn'))) {
+            //            ORDER BY (POW((lon-$lon),2) + POW((lat-$lat),2))";
+            $model_car->orderByRaw("POW((bravo_cars.map_lng-" . $lgn . "),2) + POW((bravo_cars.map_lat-" . $lat . "),2)");
         }
         $orderby = $request->input("orderby");
-        switch ($orderby){
+        switch ($orderby) {
             case "price_low_high":
                 $raw_sql = "CASE WHEN IFNULL( bravo_cars.sale_price, 0 ) > 0 THEN bravo_cars.sale_price ELSE bravo_cars.price END AS tmp_min_price";
                 $model_car->selectRaw($raw_sql);
@@ -951,26 +977,27 @@ class Car extends Bookable
         $model_car->groupBy("bravo_cars.id");
 
         $max_guests = (int)($request->query('adults') + $request->query('children'));
-        if($max_guests){
-            $model_car->where('max_guests','>=',$max_guests);
+        if ($max_guests) {
+            $model_car->where('max_guests', '>=', $max_guests);
         }
 
-        if(!empty($request->query('limit'))){
+        if (!empty($request->query('limit'))) {
             $limit = $request->query('limit');
-        }else{
-            $limit = !empty(setting_item("car_page_limit_item"))? setting_item("car_page_limit_item") : 9;
+        } else {
+            $limit = !empty(setting_item("car_page_limit_item")) ? setting_item("car_page_limit_item") : 9;
         }
 
-        return $model_car->with(['location','hasWishList','translations'])->paginate($limit);
+        return $model_car->with(['location', 'hasWishList', 'translations'])->paginate($limit);
     }
 
-    public function dataForApi($forSingle = false){
+    public function dataForApi($forSingle = false)
+    {
         $data = parent::dataForApi($forSingle);
         $data['passenger'] = $this->passenger;
         $data['gear'] = $this->gear;
         $data['baggage'] = $this->baggage;
         $data['door'] = $this->door;
-        if($forSingle){
+        if ($forSingle) {
             $data['review_score'] = $this->getReviewDataAttribute();
             $data['review_stats'] = $this->getReviewStats();
             $data['review_lists'] = $this->getReviewList();
@@ -981,13 +1008,13 @@ class Car extends Bookable
             $data['default_state'] = $this->default_state;
             $data['booking_fee'] = setting_item_array('car_booking_buyer_fees');
             if (!empty($location_id = $this->location_id)) {
-                $related =  parent::query()->where('location_id', $location_id)->where("status", "publish")->take(4)->whereNotIn('id', [$this->id])->with(['location','translations','hasWishList'])->get();
+                $related =  parent::query()->where('location_id', $location_id)->where("status", "publish")->take(4)->whereNotIn('id', [$this->id])->with(['location', 'translations', 'hasWishList'])->get();
                 $data['related'] = $related->map(function ($related) {
-                        return $related->dataForApi();
-                    }) ?? null;
+                    return $related->dataForApi();
+                }) ?? null;
             }
             $data['terms'] = Terms::getTermsByIdForAPI($this->terms->pluck('term_id'));
-        }else{
+        } else {
             $data['review_score'] = $this->getScoreReview();
         }
         return $data;
@@ -1006,8 +1033,8 @@ class Car extends Bookable
                 "title"    => __("Filter Price"),
                 "field"    => "price_range",
                 "position" => "1",
-                "min_price" => floor ( Currency::convertPrice($min_max_price[0]) ),
-                "max_price" => ceil (Currency::convertPrice($min_max_price[1]) ),
+                "min_price" => floor(Currency::convertPrice($min_max_price[0])),
+                "max_price" => ceil(Currency::convertPrice($min_max_price[1])),
             ],
             [
                 "title"    => __("Review Score"),
@@ -1031,12 +1058,11 @@ class Car extends Bookable
         $search_fields = array_values(\Illuminate\Support\Arr::sort($search_fields, function ($value) {
             return $value['position'] ?? 0;
         }));
-        foreach ( $search_fields as &$item){
-            if($item['field'] == 'attr' and !empty($item['attr']) ){
+        foreach ($search_fields as &$item) {
+            if ($item['field'] == 'attr' and !empty($item['attr'])) {
                 $attr = Attributes::find($item['attr']);
                 $item['attr_title'] = $attr->translateOrOrigin(app()->getLocale())->name;
-                foreach($attr->terms as $term)
-                {
+                foreach ($attr->terms as $term) {
                     $translate = $term->translateOrOrigin(app()->getLocale());
                     $item['terms'][] =  [
                         'id' => $term->id,
