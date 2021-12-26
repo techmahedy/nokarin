@@ -5,6 +5,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset("libs/fotorama/fotorama.css") }}"/>
 @endsection
 @section('content')
+
     <div class="bravo_detail_car">
         @include('Car::frontend.layouts.details.banner')
         <div class="bravo_content">
