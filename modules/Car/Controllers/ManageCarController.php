@@ -1,23 +1,26 @@
 <?php
 namespace Modules\Car\Controllers;
 
-use App\Notifications\AdminChannelServices;
-use Modules\Booking\Events\BookingUpdatedEvent;
-use Modules\Booking\Models\Enquiry;
+use App\File\File;
 use Modules\Car\Models\Car;
-use Modules\Car\Models\CarTerm;
-use Modules\Car\Models\CarTranslation;
-use Modules\Core\Events\CreatedServicesEvent;
-use Modules\Core\Events\UpdatedServiceEvent;
-use Modules\FrontendController;
 use Illuminate\Http\Request;
+use Modules\Car\Models\CarTerm;
+use Modules\FrontendController;
+use Modules\Booking\Models\Booking;
+use Modules\Booking\Models\Enquiry;
+use Modules\Core\Models\Attributes;
 use Illuminate\Support\Facades\Auth;
 use Modules\Location\Models\Location;
-use Modules\Core\Models\Attributes;
-use Modules\Booking\Models\Booking;
+use Modules\Car\Models\CarTranslation;
+use App\Notifications\AdminChannelServices;
+use Modules\Core\Events\UpdatedServiceEvent;
+use Modules\Core\Events\CreatedServicesEvent;
+use Modules\Booking\Events\BookingUpdatedEvent;
 
 class ManageCarController extends FrontendController
-{
+{   
+    use File;
+    
     protected $carClass;
     protected $carTranslationClass;
     protected $carTermClass;
@@ -25,6 +28,9 @@ class ManageCarController extends FrontendController
     protected $locationClass;
     protected $bookingClass;
     protected $enquiryClass;
+    protected $path1;
+    protected $path2;
+    protected $path3;
 
     public function __construct()
     {
@@ -128,8 +134,22 @@ class ManageCarController extends FrontendController
         return view('Car::frontend.manageCar.detail', $data);
     }
 
-
     public function store( Request $request, $id ){
+
+        if( $file = $request->file('copy_of_orcr') ) {
+            $path = 'uploads/car';
+            $this->path1 = $this->file($file,$path);
+        }
+
+        if( $file = $request->file('copy_of_insurance') ) {
+            $path = 'uploads/car';
+            $this->path2 = $this->file($file,$path);
+        }
+
+        if( $file = $request->file('deed_of_sale_if_applicable') ) {
+            $path = 'uploads/car';
+            $this->path3 = $this->file($file,$path);
+        }
         
         if($id>0){
             $this->checkPermission('car_update');
@@ -188,11 +208,15 @@ class ManageCarController extends FrontendController
             'plate_conduction_sticker',
             'mv_file_no',
             'garage_area',
-            'copy_of_orcr',
-            'insurance_name',
-            'copy_of_insurance',
-            'deed_of_sale_if_applicable'
+            'insurance_name'
         ];
+
+        if( $file = $request->file('copy_of_orcr') ) {
+            $path = 'uploads/car';
+            $this->path = $this->file($file,$path);
+        }
+        //$this->path ? '/storage/'.$this->path : ''
+
         if($this->hasPermission('car_manage_others')){
             $dataKeys[] = 'create_user';
         }
@@ -200,6 +224,14 @@ class ManageCarController extends FrontendController
         $row->fillByAttr($dataKeys,$request->input());
 
         $res = $row->saveOriginOrTranslation($request->input('lang'),true);
+        
+        $car = Car::orderBy('id','desc')->first();
+
+        Car::where('id',$car->id)->update([
+            'copy_of_orcr' => $this->path1 ? '/storage/'.$this->path1 : $car->copy_of_orcr,
+            'copy_of_insurance' => $this->path2 ? '/storage/'.$this->path2 : $car->copy_of_insurance,
+            'deed_of_sale_if_applicable' => $this->path3 ? '/storage/'.$this->path3 : $car->deed_of_sale_if_applicable,
+        ]);
 
         if ($res) {
             if(!$request->input('lang') or is_default_lang($request->input('lang'))) {

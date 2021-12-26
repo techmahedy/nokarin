@@ -182,7 +182,7 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Copy of ORCR")}}</label>
-                        <input type="text" class="form-control" name="copy_of_orcr" placeholder="Copy of ORCR" value="{{$row->copy_of_orcr}}"/>
+                        <input type="file" class="form-control" name="copy_of_orcr"/>
                     </div>
                 </div>
                 <div class="col-md-3">
@@ -194,13 +194,13 @@
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Copy of Insurance")}}</label>
-                        <input type="text" class="form-control" name="copy_of_insurance" placeholder="Copy of Insurance" value="{{$row->copy_of_insurance}}"/>
+                        <input type="file" class="form-control" name="copy_of_insurance"/>
                     </div>
                 </div>
                 <div class="col-md-3">
                     <div class="form-group">
                         <label>{{__("Deed Of Sale if applicable")}}</label>
-                        <input type="text" class="form-control" name="deed_of_sale_if_applicable" placeholder="Deed Of Sale if applicable" value="{{$row->deed_of_sale_if_applicable}}"/>
+                        <input type="file" class="form-control" name="deed_of_sale_if_applicable" />
                     </div>
                 </div>
             </div>

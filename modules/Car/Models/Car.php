@@ -42,6 +42,7 @@ class Car extends Bookable
         'status',
         'faqs'
     ];
+    
     protected $slugField     = 'slug';
     protected $slugFromField = 'title';
     protected $seo_type = 'car';
